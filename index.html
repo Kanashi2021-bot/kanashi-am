@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KANASHI - Alight Motion Access</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 flex flex-col items-center justify-center font-sans">
+
+  <div class="max-w-md w-full bg-gray-800 rounded-xl p-5 border border-gray-700 shadow-2xl">
+    
+    <!-- BRANDING HEADER -->
+    <header class="mb-5 text-center">
+      <h1 class="text-xl font-extrabold tracking-wider text-indigo-400">KANASHI — ALIGHT MOTION</h1>
+      <p class="text-xs text-gray-400 mt-0.5">Auto Activation / Magic Link Proxy</p>
+    </header>
+
+    <!-- STEP 1 -->
+    <div class="mb-5 bg-gray-900/80 p-3.5 rounded-lg border border-gray-700">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-semibold uppercase text-indigo-300">Step 1: Send Magic Link</h2>
+        <span class="text-[10px] bg-indigo-950 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-800">KANASHI API</span>
+      </div>
+      <input type="email" id="email1" placeholder="Masukkan Gmail Alight Motion..." class="w-full bg-gray-800 text-xs border border-gray-700 rounded p-2.5 mb-2 focus:outline-none focus:border-indigo-500">
+      <button onclick="sendLink()" id="btnSend" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 rounded transition">
+        KIRIM MAGIC LINK
+      </button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="mb-5 bg-gray-900/80 p-3.5 rounded-lg border border-gray-700">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-semibold uppercase text-emerald-300">Step 2: Verifikasi Link</h2>
+        <span class="text-[10px] bg-emerald-950 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-800">KANASHI VERIFY</span>
+      </div>
+      <input type="email" id="email2" placeholder="Email (sama dengan Step 1)" class="w-full bg-gray-800 text-xs border border-gray-700 rounded p-2.5 mb-2 focus:outline-none focus:border-emerald-500">
+      <input type="text" id="magicLink" placeholder="Paste magic link dari email (oobCode)..." class="w-full bg-gray-800 text-xs border border-gray-700 rounded p-2.5 mb-2 focus:outline-none focus:border-emerald-500">
+      <input type="text" id="orderId" placeholder="GPA Order ID (Opsional: GPA.xxxx...)" class="w-full bg-gray-800 text-xs border border-gray-700 rounded p-2.5 mb-2 focus:outline-none focus:border-emerald-500">
+      <button onclick="verifyLink()" id="btnVerif" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded transition">
+        VERIFIKASI & AKTIFKAN PREMIUM
+      </button>
+    </div>
+
+    <!-- RESPONSE LOG -->
+    <div>
+      <div class="flex items-center justify-between mb-1">
+        <p class="text-xs font-medium text-gray-400">Response Server:</p>
+        <button onclick="clearLog()" class="text-[10px] text-gray-500 hover:text-gray-300">Clear</button>
+      </div>
+      <pre id="log" class="bg-black text-green-400 p-2.5 text-xs font-mono rounded-lg h-32 overflow-y-auto border border-gray-800 whitespace-pre-wrap break-all">Menunggu aksi...</pre>
+    </div>
+
+    <footer class="mt-4 text-center text-[10px] text-gray-500">
+      © KANASHI · Alight Motion Auto Activation System
+    </footer>
+  </div>
+
+  <script>
+    function printLog(data) {
+      const logEl = document.getElementById('log');
+      if (typeof data === 'object') {
+        logEl.innerText = JSON.stringify(data, null, 2);
+      } else {
+        logEl.innerText = data;
+      }
+    }
+
+    function clearLog() {
+      document.getElementById('log').innerText = "Menunggu aksi...";
+    }
+
+    async function sendLink() {
+      const email = document.getElementById('email1').value.trim();
+      if (!email) return alert("Isi email terlebih dahulu!");
+
+      printLog("Mengirim request via Kanashi Proxy...");
+
+      try {
+       const res = await fetch('/api/kanashi/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const text = await res.text();
+        try {
+          printLog(JSON.parse(text));
+        } catch (e) {
+          printLog("Response Raw: " + text);
+        }
+      } catch (err) {
+        printLog({ error: "Fetch Error", message: err.message });
+      }
+    }
+
+    async function verifyLink() {
+      const email = document.getElementById('email2').value.trim();
+      const link = document.getElementById('magicLink').value.trim();
+      const orderid = document.getElementById('orderId').value.trim();
+
+      if (!email || !link) return alert("Email & Link verifikasi wajib diisi!");
+
+      printLog("Memproses verifikasi Premium via Kanashi Proxy...");
+
+      try {
+        const res = await fetch('/api/kanashi/verifv2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, link, orderid })
+        });
+
+        const text = await res.text();
+        try {
+          printLog(JSON.parse(text));
+        } catch (e) {
+          printLog("Response Raw: " + text);
+        }
+      } catch (err) {
+        printLog({ error: "Fetch Error", message: err.message });
+      }
+    }
+  </script>
+</body>
+</html>
